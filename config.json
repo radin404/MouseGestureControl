@@ -1,0 +1,10 @@
+{
+    "up": "task_view",
+    "down": "close_task_view",
+    "left": "desktop_right",
+    "right": "desktop_left",
+    "debug": false,
+    "threshold": 120.0,
+    "cooldown": 0.5,
+    "use_alt_instead_of_ctrl": true
+}
