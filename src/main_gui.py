@@ -369,18 +369,50 @@ class MouseGestureControlApp:
             self.tray_icon.stop()
         self.root.quit()
     
-    def run(self):
+    def run(self, start_minimized=False):
         """Start the application."""
-        print("🎧 Mouse Gesture Control - Starting GUI application...")
+        print("Mouse Gesture Control - Starting GUI application...")
         print("The application will run in the system tray. Right-click the tray icon for options.")
         
         # Start with gestures enabled by default
         self.enable_gestures()
         
+        # Check if we should start minimized (for startup)
+        if start_minimized:
+            self.root.withdraw()  # Hide the window
+            print("Starting minimized to system tray...")
+        
         # Run the GUI
         self.root.mainloop()
+    
+    def auto_detect_startup(self):
+        """Auto-detect if we should start minimized based on startup context."""
+        # Check if we're being launched from Windows startup
+        # This is a simple heuristic - if we're launched without user interaction
+        import time
+        import psutil
+        
+        try:
+            # Check if we're launched shortly after system boot
+            boot_time = psutil.boot_time()
+            current_time = time.time()
+            time_since_boot = current_time - boot_time
+            
+            # If we're launched within 2 minutes of boot, likely from startup
+            if time_since_boot < 120:  # 2 minutes
+                return True
+        except:
+            pass
+        
+        # Check command line arguments
+        if "--startup" in sys.argv or "startup" in str(sys.argv).lower():
+            return True
+            
+        return False
 
 
 if __name__ == "__main__":
     app = MouseGestureControlApp()
-    app.run()
+    # Auto-detect if we should start minimized
+    should_minimize = app.auto_detect_startup()
+    app.run(start_minimized=should_minimize)
