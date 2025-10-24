@@ -30,7 +30,7 @@ class MouseGestureControlApp:
         self.root.resizable(True, True)
         
         # Configuration
-        self.config_path = "config.json"
+        self.config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
         self.config = self.load_config()
         
         # Gesture control state
@@ -77,9 +77,25 @@ class MouseGestureControlApp:
     def save_config(self):
         """Save configuration to file."""
         try:
-            with open(self.config_path, "w") as f:
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+            
+            # Try to save with proper permissions
+            temp_path = f"{self.config_path}.tmp"
+            with open(temp_path, "w") as f:
                 json.dump(self.config, f, indent=4)
+            
+            # If we got here, writing succeeded, now try to replace the old file
+            if os.path.exists(self.config_path):
+                os.replace(self.config_path, f"{self.config_path}.bak")
+            os.replace(temp_path, self.config_path)
+            
             return True
+        except PermissionError:
+            messagebox.showerror("Error", 
+                "Permission denied while saving configuration.\n" + 
+                "Try running the application as administrator or saving to user directory.")
+            return False
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save configuration: {e}")
             return False
